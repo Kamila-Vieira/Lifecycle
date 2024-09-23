@@ -3,12 +3,16 @@ package br.edu.scl.ifsp.sdm.lifecycle
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.util.Log
 import android.widget.EditText
 import androidx.core.view.children
 import androidx.core.widget.doAfterTextChanged
 import br.edu.scl.ifsp.sdm.lifecycle.databinding.ActivityMainBinding
 import br.edu.scl.ifsp.sdm.lifecycle.databinding.TilePhoneBinding
+import java.lang.Thread.sleep
 
 class MainActivity : AppCompatActivity() {
     private val activityMainBinding: ActivityMainBinding by lazy {
@@ -17,9 +21,19 @@ class MainActivity : AppCompatActivity() {
 
     private var filledChars: Int = 0
 
+    private val nameHandler = object: Handler(Looper.myLooper()!!){
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            msg.data.getString(NAME).let {
+                activityMainBinding.nameEt.setText(it)
+            }
+        }
+    }
+
     companion object{
         const val FILLED_CHARS = "FILLED_CHARS"
         const val PHONES = "PHONES"
+        const val NAME = "NAME"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -83,6 +97,17 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.subtitle = getString(R.string.main)
 
         Log.v(getString(R.string.app_name), "Main - onCreate(): inicio do COMPLETO")
+
+        Thread {
+            sleep(3000)
+            nameHandler.also {
+                it.sendMessage(Message.obtain(it).apply {
+                    data = Bundle().apply {
+                        putString(NAME, "SDM")
+                    }
+                })
+            }
+        }.start()
     }
 
     override fun onStart() {
